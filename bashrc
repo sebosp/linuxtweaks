@@ -16,8 +16,6 @@ export HISTFILESIZE=50000
 shopt -s histappend
 export HISTCONTROL=ignoreboth:erasedups
 export HISTFILE=$HOME/.bash_history
-export http_proxy=http://10.24.86.207:8888
-export HTTPS_PROXY=http://10.24.86.207:8888
 source /usr/share/git/completion/git-prompt.sh
 export PREPS1='__git_ps1 '
 export POSPS1=' "\\\$ "'
@@ -76,7 +74,10 @@ PERL5LIB="/home/seb/perl5/lib/perl5${PERL5LIB+:}${PERL5LIB}"; export PERL5LIB;
 PERL_LOCAL_LIB_ROOT="/home/seb/perl5${PERL_LOCAL_LIB_ROOT+:}${PERL_LOCAL_LIB_ROOT}"; export PERL_LOCAL_LIB_ROOT;
 PERL_MB_OPT="--install_base \"/home/seb/perl5\""; export PERL_MB_OPT;
 PERL_MM_OPT="INSTALL_BASE=/home/seb/perl5"; export PERL_MM_OPT;
+if [[ $TERM =~ "screen" ]]; then
+	preexec_xterm_title_install
+	source ~/screen-preexec.sh
+else
+	source ~/preexec.bash.txt
+fi
 
-source ~/preexec.bash.txt
-preexec_xterm_title_install
-source ~/screen-preexec.sh
