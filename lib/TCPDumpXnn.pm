@@ -25,7 +25,7 @@ sub checkFile{
 
 sub isIPv4{
 	my ($self,$packetData) = @_;
-	print "Got data: $packetData\n";
+	return 0 if(length($packetData < 2)); # Invalid packet
 	my ($version) = split(//,$packetData);
 	if($version eq "4"){
 		return 1;
@@ -36,7 +36,8 @@ sub isIPv4{
 sub removeIPv4Header{
 	my ($self,$packetKey) = @_;
 	my %packet = %{ $self->packets() };
-	return 0 unless($self->isIPv4($packet{$packetKey}{payload}[0]));
+	return 1 if(exists($packet{$packetKey}{_hasIPv4Header}) && $packet{$packetKey}{_hasIPv4Header} == 0);
+	return 0 unless($self->isIPv4($packet{$packetKey}{payload}[0])); # Not an IPv4 packet
 	my ($version,$headerSize) = split(//,$packet{$packetKey}{payload}[0]);
 	# headerSize is how many 32-bit words is header
 	# Transformed into bytes n*32/8 => n*4
@@ -54,16 +55,15 @@ sub removeIPv4Header{
 sub removeTCPHeader{
 	my ($self,$packetKey) = @_;
 	my %packet = %{ $self->packets() };
-	if(!exists($packet{$packetKey}{_hasIPv4Header}) || $packet{$packetKey}{_hasIPv4Header} == 1){
-		return -1 unless($self->removeIPv4Header($packetKey));
-	}
+	return 1 if(exists($packet{$packetKey}{_hasTCPHeader}) && $packet{$packetKey}{_hasTCPHeader} == 0);
+	return 0 unless($self->removeIPv4Header($packetKey));
 	# Byte Pos | Packet Payload fields:
 	# 0        | [Source port]	[Destination port]
 	# 4        | [Sequence number]x2
 	# 8        | [Acknowledgment number (if ACK set)]x2
 	# 12       | [Data offset(4 bits) ... reserved ]
 	my $dataOffsetPosition = 12;
-	if($dataOffsetPosition > scalar(@{$packet{$packetKey}{payload}})){
+	if($dataOffsetPosition > (scalar(@{$packet{$packetKey}{payload}}) - 1 )){
 		return 0;
 	}
 	my ($dataOffset) = split(//,$packet{$packetKey}{payload}[$dataOffsetPosition]);
@@ -78,7 +78,16 @@ sub removeTCPHeader{
 	$packet{$packetKey}{_hasTCPHeader}=0;
 	$self->packets(\%packet);
 	return 1;
-	
+}
+
+sub printPacketData{
+	my ($self,$packetKey) = @_;
+	my %packet = %{ $self->packets() };
+	return 0 unless($self->removeTCPHeader($packetKey));
+	foreach my $currentByte (@{$packet{$packetKey}{payload}}){
+		print chr(hex("0x$currentByte"));
+	}
+	return 1;
 }
 
 sub readFile{
