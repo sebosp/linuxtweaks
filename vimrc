@@ -4,6 +4,73 @@ function! ResCur()
     return 1
   endif
 endfunction
+function! TestStatus()
+  if &filetype != "rust"
+    return ""
+  elseif g:TestStatus == -1
+    return "[Test: N/A]"
+  elseif g:TestStatus == 0
+    return "[Test: OK.]"
+  else
+    return "[Test: ERR]"
+  endif
+endfunction
+
+" run :GoBuild or :GoTestCompile based on the go file
+function! s:build_go_files()
+  let l:file = expand('%')
+  if l:file =~# '^\f\+_test\.go$'
+    call go#test#Test(0, 1)
+  elseif l:file =~# '^\f\+\.go$'
+    call go#cmd#Build(0)
+  endif
+endfunction
+
+function! BgCmdCB(channel,msg)
+  call writefile([a:msg], g:bgCmdOutput,'a')
+endfunction
+function! BgCmdExit(job,status)
+  let g:TestStatus=a:status
+  if a:status > 0
+    hi statusline guibg=DarkRed ctermfg=1 guifg=Black ctermbg=0
+  else
+    hi statusline term=bold,reverse cterm=bold ctermfg=233 ctermbg=66 gui=bold guifg=#1c1c1c guibg=#5f8787
+    let l:bufno = bufwinnr("__Bg_Res__")
+    if bufno != -1
+      execute bufno . "wincmd w"
+      close
+    endif
+  endif
+endfunction
+function! BgCmdClose(channel)
+  let l:bufno = bufwinnr("__Bg_Res__")
+  if bufno == -1
+    below 8split __Bg_Res__
+    let l:bufno = bufwinnr("__Bg_Res__")
+  else
+    execute bufno . "wincmd w"
+  endif
+  normal! ggdG
+  setlocal buftype=nofile
+  call append(0,readfile(g:bgCmdOutput))
+  execute "-1 wincmd w"
+  unlet g:bgCmdOutput
+endfunction
+
+function! RunBgCmd(command)
+  if exists('g:bgCmdOutput')
+    echo 'Already running task in background'
+  else
+    echo 'Running 'a:command ' in background'
+    let g:bgCmdOutput = tempname()
+    call job_start(a:command,{
+      \'err_io':'buffer',
+      \'out_io': 'buffer',
+      \'callback': 'BgCmdCB',
+      \'close_cb':'BgCmdClose',
+      \'exit_cb':'BgCmdExit'})
+  endif
+endfunction
 
 augroup resCur
   autocmd!
@@ -19,9 +86,16 @@ set hlsearch
 set incsearch
 set number
 filetype indent plugin on
+au BufNewFile,BufRead *.rs set filetype=rust
+set statusline=%f:                "Current file
+set statusline+=%4l/%-4L          "Current line / Total lines
+set statusline+=\ -\ [Col:\ %3v]  "Current column
+set statusline+=\ -\ %y\          "Current filetype
+set statusline+=%{TestStatus()}   "Test Results
+set statusline+=%#warningmsg#     "Warning message
+set statusline+=%{SyntasticStatuslineFlag()}%*
 
-set statusline=%f:%4l/%-4L\ -\ [Col:\ %3v]\ -\ %y\ %#warningmsg#%{SyntasticStatuslineFlag()}%*
-
+let g:TestStatus=-1
 let g:syntastic_always_populate_loc_list = 1
 let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 1
@@ -47,44 +121,6 @@ let g:rustfmt_autosave = 1
 let g:go_metalinter_autosave = 1
 autocmd FileType go nmap <leader>r <Plug>(go-run)
 autocmd FileType go nmap <leader>t <Plug>(go-test)
-" run :GoBuild or :GoTestCompile based on the go file
-function! s:build_go_files()
-  let l:file = expand('%')
-  if l:file =~# '^\f\+_test\.go$'
-    call go#test#Test(0, 1)
-  elseif l:file =~# '^\f\+\.go$'
-    call go#cmd#Build(0)
-  endif
-endfunction
-
-function! BgCmdCB(channel,msg)
-  call writefile([a:msg], g:bgCmdOutput,'a')
-endfunction
-function! BgCmdExit(channel)
-"  execute "cfile! " . g:bgCmdOutput
-"  copen
-  let l:bufno = bufwinnr("__Bg_Res__")
-  if bufno == -1
-    below 8split __Bg_Res__
-  else
-    execute bufno . "wincmd w"
-  endif
-  normal! ggdG
-  setlocal buftype=nofile
-  call append(0,readfile(g:bgCmdOutput))
-  unlet g:bgCmdOutput
-endfunction
-
-function! RunBgCmd(command)
-  if exists('g:bgCmdOutput')
-    echo 'Already running task in background'
-  else
-    echo 'Running 'a:command ' in background'
-    let g:bgCmdOutput = tempname()
-    call job_start(a:command,{'err_io':'buffer', 'out_io': 'buffer', 'callback': 'BgCmdCB','close_cb':'BgCmdExit'})
-  endif
-endfunction
-" So we can use :BackgroundCommand to call our function.
 command! -nargs=+ -complete=shellcmd RunBg call RunBgCmd(<q-args>)
 
 autocmd FileType go nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
@@ -96,8 +132,8 @@ autocmd Filetype go command! -bang AT call go#alternate#Switch(<bang>0, 'tabe')
 autocmd FileType rust compiler cargo
 autocmd FileType rust nmap <leader>r :!cargo run 2>&1<CR>
 autocmd FileType rust nmap <leader>tc :RunBg cargo test<CR>
-autocmd FileType rust nmap <leader>tC :RunBg cargo test -- --nocapture 2>&1<CR>
+autocmd FileType rust nmap <leader>tc :RunBg cargo test<CR>
+autocmd FileType rust nmap <leader>tC :RunBg cargo test -- --nocapture<CR>
 autocmd FileType rust nmap <leader>b :!cargo build<CR>
 autocmd FileType rust set shiftwidth=4
 autocmd FileType rust let g:syntastic_rust_checkers = ['cargo']
-
