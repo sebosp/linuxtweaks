@@ -30,44 +30,46 @@ function! BgCmdCB(channel,msg)
   call writefile([a:msg], g:bgCmdOutput,'a')
 endfunction
 function! BgCmdExit(job,status)
+  let l:bufno = bufwinnr("__Bg_Res__")
+  echo 'Running' g:bgCmd 'in background... Done.'
   let g:TestStatus=a:status
+  " Change status line to show errors
   if a:status > 0
     hi statusline guibg=DarkRed ctermfg=1 guifg=Black ctermbg=0
+    if l:bufno == -1
+      below 8split __Bg_Res__
+      let l:bufno = bufwinnr("__Bg_Res__")
+    else
+      execute bufno . "wincmd w"
+    endif
+    normal! ggdG
+    setlocal buftype=nofile
+    call append(0,readfile(g:bgCmdOutput))
+    normal! gg
+    execute "-1 wincmd w"
   else
+    " Restore status line
     hi statusline term=bold,reverse cterm=bold ctermfg=233 ctermbg=66 gui=bold guifg=#1c1c1c guibg=#5f8787
-    let l:bufno = bufwinnr("__Bg_Res__")
-    if bufno != -1
+    " Close tests result window
+    if l:bufno != -1
       execute bufno . "wincmd w"
       close
     endif
   endif
-endfunction
-function! BgCmdClose(channel)
-  let l:bufno = bufwinnr("__Bg_Res__")
-  if bufno == -1
-    below 8split __Bg_Res__
-    let l:bufno = bufwinnr("__Bg_Res__")
-  else
-    execute bufno . "wincmd w"
-  endif
-  normal! ggdG
-  setlocal buftype=nofile
-  call append(0,readfile(g:bgCmdOutput))
-  execute "-1 wincmd w"
   unlet g:bgCmdOutput
 endfunction
 
 function! RunBgCmd(command)
+  let g:bgCmd = a:command
   if exists('g:bgCmdOutput')
-    echo 'Already running task in background'
+    echo 'Task' g:bgCmd 'running in background'
   else
-    echo 'Running 'a:command ' in background'
+    echo 'Running' g:bgCmd 'in background'
     let g:bgCmdOutput = tempname()
     call job_start(a:command,{
       \'err_io':'buffer',
       \'out_io': 'buffer',
       \'callback': 'BgCmdCB',
-      \'close_cb':'BgCmdClose',
       \'exit_cb':'BgCmdExit'})
   endif
 endfunction
