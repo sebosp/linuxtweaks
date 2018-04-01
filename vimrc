@@ -110,9 +110,15 @@ autocmd FileType puppet set ts=2 sw=2 et
 highlight currentWordHi term=bold ctermbg=236 guibg=green
 au CursorHold * exe 'match currentWordHi /\V\<'.substitute(escape(expand('<cword>'),'\'),"/","\\\\/","g").'\>/'
 au CursorHoldI * exe 'match currentWordHi /\V\<'.substitute(escape(expand('<cword>'),'\'),"/","\\\\/","g").'\>/'
+au BufRead,BufNewFile *.tf setlocal filetype=terraform
+au BufRead,BufNewFile *.tfvars setlocal filetype=terraform
+au BufRead,BufNewFile *.tfstate setlocal filetype=javascript
 setl updatetime=200
 highlight rightMargin ctermbg=233
 2match rightMargin /.\%>80v/    
+au BufNewFile,BufRead *.yml set filetype=ansible
+autocmd FileType ansible setlocal ts=2 sts=2 sw=2 expandtab indentkeys=!^Fo,O,0#,<:>,=-
+autocmd FileType ansible setlocal indentkeys-=<:>
 set viminfo='10,\"100,:20,%,n~/.viminfo
 set autowrite
 map <C-n> :cnext<CR>
