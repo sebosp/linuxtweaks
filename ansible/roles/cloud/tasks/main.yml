@@ -1,0 +1,13 @@
+### Setup of Cloud Utilities
+- name: Install Terraform
+  package:
+    name: terraform
+    state: present
+
+- name: Install AWS CLI tools
+  package:
+    name: aws-cli
+    state: present
+
+# XXX: Add gcloud
+

@@ -1,0 +1,9 @@
+# Vim plugins and configuration.
+
+- name: Github repos
+  git:
+    repo: "https://github.com/{{ item.user }}/{{ item.repo_name }}.git"
+    dest: "/home/seb/.vim/pack/{{ pack_name }}/start/{{ item.repo_name }}"
+    version: "{{ item.version | default('HEAD') }}"
+  with_items: "{{ github_vim_plugins }}"
+

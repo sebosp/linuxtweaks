@@ -1,0 +1,7 @@
+pack_name: test
+github_vim_plugins:
+  - user: pearofducks
+    repo_name: ansible-vim
+    version: 2.0
+  - user: hashivim
+    repo_name: vim-terraform

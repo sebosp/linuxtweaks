@@ -1,0 +1,38 @@
+### Setup for CI/CD
+### XXX: The functionality of this check_version/update_if_needed
+### should be abstracted to a common module/role
+- name: Setup Temp Dir for downloads
+  file:
+    path: /var/tmp/
+    state: directory
+
+- name: Check existence of jx
+  stat:
+    path: /usr/local/bin/jx
+  register: jx_binary_stat
+
+- name: Placeholder version to flag if jx needs to be installed/updated
+  set_fact:
+    current_jx_version: X.X.X
+
+- name: Check jx version if file exists
+  command: /usr/local/bin/jx --version
+  register: jx_binary_version
+  when: jx_binary_stat.stat.exists == true
+
+- name: Check jx version if file exists
+  set_fact:
+    current_jx_version: "{{ jx_binary_version.stdout }}"
+  when: jx_binary_stat.stat.exists == true
+
+- name: Download JX
+  get_url:
+    url: https://github.com/jenkins-x/jx/releases/download/v{{ jx_version }}/jx-linux-amd64.tar.gz
+    dest: /var/tmp/
+  when: current_jx_version != jx_version
+
+- name: Unarchive
+  unarchive:
+    src: /var/tmp/jx-linux-amd64.tar.gz
+    dest: /usr/local/bin/
+  when: current_jx_version != jx_version

@@ -1,0 +1,14 @@
+### These are minimal tools I use for my common tasks.
+- name: Configure JX
+  hosts: localhost
+  connection: local
+  roles:
+    - name: Configure VIM
+      role: vim
+
+    - name: Configure CI Tools
+      role: ci
+
+    - name: Configure Cloud Tools
+      role: cloud
+
