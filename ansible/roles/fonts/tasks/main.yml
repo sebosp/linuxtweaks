@@ -1,0 +1,29 @@
+- name: "Install {{ item }}"
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - ttf-dejavu
+    - ttf-liberation
+    - noto-fonts
+
+- name: Symlinks to enable fonts
+  file:
+    src: "/etc/fonts/conf.avail/{{ item }}"
+    dest: "/etc/fonts/conf.d/{{ item }}"
+    state: link
+  with_items:
+    - 70-no-bitmaps.conf
+    - 10-sub-pixel-rgb.conf
+    - 11-lcdfilter-default.conf
+
+- name: Config FreeType2
+  copy:
+    content: >
+      export FREETYPE_PROPERTIES="truetype:interpreter-version=40"
+    dest: /etc/profile.d/freetype2.sh
+
+- name: Configure local.conf
+  copy:
+    src: fonts_local.conf
+    dest: /etc/fonts/local.conf

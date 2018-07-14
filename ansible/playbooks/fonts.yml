@@ -1,0 +1,8 @@
+### Font config
+- name: Configure Desktop Environment
+  hosts: localhost
+  connection: local
+  roles:
+    - name: Configure Fonts
+      role: fonts
+
