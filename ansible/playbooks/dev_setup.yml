@@ -1,5 +1,5 @@
 ### These are minimal tools I use for my common tasks.
-- name: Configure JX
+- name: Configure Dev Tools
   hosts: localhost
   connection: local
   roles:
