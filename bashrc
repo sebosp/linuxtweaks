@@ -79,3 +79,9 @@ export GOPATH=/data/git/go
 export PATH=$PATH:/data/git/go/bin
 alias proveall='prove -j9 --state=slow,save -lr t'
 export PROMPT_DIRTRIM=4
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/var/tmp/google-cloud-sdk/path.bash.inc' ]; then source '/var/tmp/google-cloud-sdk/path.bash.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/var/tmp/google-cloud-sdk/completion.bash.inc' ]; then source '/var/tmp/google-cloud-sdk/completion.bash.inc'; fi
