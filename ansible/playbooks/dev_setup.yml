@@ -12,3 +12,6 @@
     - name: Configure Cloud Tools
       role: cloud
 
+    - name: Setup Docker
+      role: docker
+
