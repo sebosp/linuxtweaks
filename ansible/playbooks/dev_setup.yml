@@ -15,3 +15,6 @@
     - name: Setup Docker
       role: docker
 
+    - name: Setup Docker
+      role: rust
+

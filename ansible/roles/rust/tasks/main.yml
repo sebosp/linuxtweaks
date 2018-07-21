@@ -1,0 +1,13 @@
+- name: Install package
+  package:
+    name: rustup
+
+- name: Setup default to nightly
+  command: "rustup default nightly"
+
+- name: Setup default to nightly
+  command: "rustup target add wasm32-unknown-unknown --toolchain nightly"
+
+- name: Install wasm-gc for small binaries
+  command: "cargo install wasm-gc"
+
