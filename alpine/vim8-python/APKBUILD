@@ -1,0 +1,67 @@
+# Contributor: Sergei Lukin <sergej.lukin@gmail.com>
+# Contributor: Łukasz Jendrysik <scadu@yandex.com>
+# Contributor: Sören Tempel <soeren+alpine@soeren-tempel.net>
+# Maintainer: Natanael Copa <ncopa@alpinelinux.org>
+pkgname=vim
+pkgver=8.1.0115
+pkgrel=0
+pkgdesc="Improved vi-style text editor"
+url="http://www.vim.org"
+arch="all"
+license="Vim"
+options="!check"  # no tests available
+makedepends="ncurses-dev lua5.3-dev python2-dev"
+subpackages="$pkgname-doc ${pkgname}diff::noarch"
+source="$pkgname-$pkgver.tar.gz::https://github.com/$pkgname/$pkgname/archive/v$pkgver.tar.gz"
+builddir="$srcdir/$pkgname-$pkgver"
+
+# secfixes:
+#   8.0.1521-r0:
+#     - CVE-2017-6350
+#     - CVE-2017-6349
+#   8.0.0329-r0:
+#     - CVE-2017-5953
+#   8.0.0056-r0:
+#     - CVE-2016-1248
+
+prepare() {
+	cd "$builddir"
+}
+
+build() {
+	cd "$builddir"
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--enable-luainterp \
+                --enable-pythoninterp=yes \
+                --with-python-config-dir=/usr/lib/python2.7/config \
+                --enable-rubyinterp=yes \
+                --enable-perlinterp=yes \
+		--without-x \
+		--disable-nls \
+		--enable-multibyte \
+		--enable-gui=no \
+		--with-lua-prefix=/usr/lua5.3 \
+		--with-compiledby="Seb Alpine"
+	make
+}
+
+package() {
+	cd "$builddir"
+	make -j1 DESTDIR="$pkgdir/" install
+
+	install -Dm644 runtime/doc/uganda.txt \
+		"$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
+
+vimdiff() {
+	pkgdesc="view file diffs in vim"
+	depends="diffutils"
+
+	install -d "$subpkgdir"/usr/bin
+	mv "$pkgdir"/usr/bin/vimdiff "$subpkgdir"/usr/bin
+}
+
+sha512sums="8da06e76903dc8dbf9c7439ce27288652813c1db0dea527752038e9ec6e756b2d07090f19a8ad9170bd88dbac72ecf029c5d2e91228b35ed7a8a010928b60ba2  vim-8.1.0115.tar.gz"
