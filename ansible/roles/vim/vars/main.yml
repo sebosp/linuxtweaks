@@ -5,3 +5,7 @@ github_vim_plugins:
     version: 2.0
   - user: hashivim
     repo_name: vim-terraform
+  - user: martinda
+    repo_name: Jenkinsfile-vim-syntax
+  - user: Valloric
+    repo_name: YouCompleteMe
