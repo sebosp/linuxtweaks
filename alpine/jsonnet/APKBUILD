@@ -37,7 +37,7 @@ build() {
 package() {
 	cd "$builddir"
 
-	install -Dm644 ./jsonnet \
+	install -Dm755 ./jsonnet \
 		"$pkgdir/usr/bin/$pkgname"
 }
 
