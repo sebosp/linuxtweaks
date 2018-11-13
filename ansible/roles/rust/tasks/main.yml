@@ -11,3 +11,11 @@
 - name: Install wasm-gc for small binaries
   command: "cargo install wasm-gc"
 
+- name: Add RLS Preview
+  command: "rustup component add rls-preview"
+
+- name: Add Rust Analysis
+  command: "rustup component add rust-analysis"
+
+- name: Add Rust-Src
+  command: "rustup component add rust-src"
