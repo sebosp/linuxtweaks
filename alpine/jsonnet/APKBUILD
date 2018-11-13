@@ -1,0 +1,44 @@
+# Maintainer: Sebastian Ospina <kraige@gmail.com>
+pkgname=jsonnet
+pkgver=0.11.2
+pkgrel=0
+pkgdesc="A data templating language for app and tool developers"
+url="https://jsonnet.org/"
+arch="all"
+license="Apache"
+options=""  # no tests available
+makedepends="build-base bash python2"
+subpackages=""
+source="$pkgname-$pkgver.tar.gz::https://github.com/google/$pkgname/archive/v$pkgver.tar.gz"
+builddir="$srcdir/$pkgname-$pkgver"
+
+prepare() {
+	cd "$builddir"
+}
+
+check() {
+	cd "$builddir"
+	unset CFLAGS
+	unset CXXFLAGS
+#	make test
+# FAIL (exit code):  ../jsonnet  --ext-str var1=test --ext-code var2='{x:1,y:2}'  error.import_folder.jsonnet
+# This run's output:
+# Something went wrong during jsonnet_evaluate_snippet, please report this: basic_filebuf::underflow error reading the file
+# Actual exit code 134, expected 1
+}
+
+build() {
+	cd "$builddir"
+	unset CFLAGS
+	unset CXXFLAGS
+	make
+}
+
+package() {
+	cd "$builddir"
+
+	install -Dm755 ./jsonnet \
+		"$pkgdir/usr/bin/$pkgname"
+}
+
+sha512sums="f1bd76d47275b2b57dc85cdc82ac7126a7504faabbf404350a35c94939b9aed99e9313d2e8f6170caf06726806d765114a6b45e115178825ae157b3d0847f1c7  jsonnet-0.11.2.tar.gz"

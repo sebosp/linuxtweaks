@@ -7,3 +7,9 @@ github_vim_plugins:
     repo_name: vim-terraform
   - user: w0rp
     repo_name: ale
+  - user: martinda
+    repo_name: Jenkinsfile-vim-syntax
+  - user: Valloric
+    repo_name: YouCompleteMe
+  - user: google
+    repo_name: vim-jsonnet
