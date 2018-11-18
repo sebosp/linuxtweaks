@@ -6,6 +6,7 @@
     - ttf-dejavu
     - ttf-liberation
     - noto-fonts
+    - powerline-fonts
 
 - name: Symlinks to enable fonts
   file:

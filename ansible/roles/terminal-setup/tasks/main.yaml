@@ -1,0 +1,30 @@
+---
+- name: validate target_user is set.
+  fail:
+    message: "Missing target_user variable"
+  when: target_user is not defined
+
+- name: Get target_user home dir.
+  command: 'grep -w {{ target_user }}:|cut -d":" -f6'
+  register: target_user_home
+
+- name: Install tmux
+  package:
+    name: "tmux"
+
+- name: Update .tmuxrc to {{ target_user_home }}
+  file:
+    src: tmux.conf
+    dst: '{{ target_user_home }}/.tmuxrc'
+
+- name: Install Powerline and Zsh
+  package:
+    name: '{{ item }}'
+  loop:
+    - powerline
+    - zsh
+
+- name: Configure zsh
+  file:
+    src: zshrc
+    dst: '{{ target_user_home }}/.zshrc'

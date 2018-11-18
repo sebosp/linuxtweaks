@@ -18,3 +18,6 @@
     - name: Setup Docker
       role: rust
 
+    - name: Terminal Setup
+      role: terminal-setup
+
