@@ -8,23 +8,39 @@
   command: 'grep -w {{ target_user }}:|cut -d":" -f6'
   register: target_user_home
 
-- name: Install tmux
+- name: Install Powerline zsh, tmux and fish
   package:
-    name: "tmux"
+    name: '{{ item }}'
+  loop:
+    - powerline
+    - zsh
+    - tmux
+    - fish
 
 - name: Update .tmuxrc to {{ target_user_home }}
   file:
     src: tmux.conf
     dst: '{{ target_user_home }}/.tmuxrc'
 
-- name: Install Powerline and Zsh
-  package:
-    name: '{{ item }}'
-  loop:
-    - powerline
-    - zsh
-
 - name: Configure zsh
   file:
     src: zshrc
     dst: '{{ target_user_home }}/.zshrc'
+
+- name: Create fish config dir
+  file:
+    ensure: dir
+    path: '{{ target_user_home }}/.config/fish/completions'
+
+- name: Get fish config
+  git:
+    repo: "https://github.com/evanlucas/fish-kubectl-completions.git"
+    dest: '{{ target_user_home }}/.config/fish/repo'
+    version: "HEAD"
+
+- name: Symlink config
+  file:
+    ensure: symlink
+    src: '{{ target_user_home }}/.config/fish/repo/kubectl.fish'
+    path: '{{ target_user_home }}/.config/fish/completions/kubectl.fish'
+
