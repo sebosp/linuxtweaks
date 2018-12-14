@@ -1,5 +1,6 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
+export PATH=$PATH:/data/kubernetes/kubernetes/cluster:$HOME/.cargo/bin
 
 # Path to your oh-my-zsh installation.
 ZSH=/usr/share/oh-my-zsh/
@@ -9,12 +10,14 @@ ZSH=/usr/share/oh-my-zsh/
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 #ZSH_THEME="robbyrussell"
+ZSH_THEME="powerlevel9k"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
 # a theme from this variable instead of looking in ~/.oh-my-zsh/themes/
 # If set to an empty array, this variable will have no effect.
 # ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
+export POWERLEVEL9K_INSTALLATION_DIR=/usr/share/zsh-theme-powerlevel9k/
 
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
@@ -55,7 +58,7 @@ DISABLE_AUTO_UPDATE="true"
 # HIST_STAMPS="mm/dd/yyyy"
 
 # Would you like to use another custom folder than $ZSH/custom?
-# ZSH_CUSTOM=/path/to/new-custom-folder
+ZSH_CUSTOM=$HOME/.zsh/plugins/
 
 # Which plugins would you like to load?
 # Standard plugins can be found in ~/.oh-my-zsh/plugins/*
@@ -64,6 +67,7 @@ DISABLE_AUTO_UPDATE="true"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
   git
+  kubectl
 )
 
 
@@ -76,7 +80,7 @@ plugins=(
 
 # Preferred editor for local and remote sessions
 # if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
+export EDITOR='vim'
 # else
 #   export EDITOR='mvim'
 # fi
@@ -103,9 +107,10 @@ fi
 
 source $ZSH/oh-my-zsh.sh
 powerline-daemon -q
-source /usr/lib/python3.7/site-packages/powerline/bindings/zsh/powerline.zsh
-ZSH_THEME="powerline"
-#source /usr/share/zsh-theme-powerlevel9k/powerlevel9k.zsh-theme
-#ZSH_THEME="powerlevel9k/powerlevel9k"
-
+# source /usr/lib/python3.7/site-packages/powerline/bindings/zsh/powerline.zsh
+# ZSH_THEME="powerline"
+# source /usr/share/zsh-theme-powerlevel9k/powerlevel9k.zsh-theme
+# ZSH_THEME="powerlevel9k/powerlevel9k"
+#source ~/.zsh/themes/materialshell.zsh-theme
+#ZSH_THEME="materialshell"
 fpath+=~/.zfunc
