@@ -28,3 +28,18 @@
   file:
     src: zshrc
     dst: '{{ target_user_home }}/.zshrc'
+
+- name: Configure zsh directory
+  file:
+    ensure: path
+    dst: '{{ target_user_home }}/.zsh/'
+
+- name: Configure zsh/functions directory
+  file:
+    ensure: path
+    dst: '{{ target_user_home }}/.zsh/functions'
+
+- name: Configure zsh
+  file:
+    src: prompt_common.zsh
+    dst: '{{ target_user_home }}/.zsh/functions/prompt_common'
