@@ -58,3 +58,13 @@
   file:
     src: prompt_common.zsh
     dst: '{{ target_user_home }}/.zsh/functions/prompt_common'
+
+- name: Add Powerlevel9k theme to ZSH
+  copy:
+    src: /usr/share/zsh-theme-powerlevel9k/powerlevel9k.zsh-theme
+    dst: /usr/share/oh-my-zsh/themes/
+
+- name: Main fish config file
+  file:
+    src: fish.config
+    dst: '{{ target_user_home }}/.config/fish/config.fish'

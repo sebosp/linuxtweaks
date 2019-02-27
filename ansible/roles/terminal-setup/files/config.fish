@@ -93,10 +93,6 @@ function remarkable
 	end
 end
 
-function athena
-	env SSHPASS=(pass www/mit) sshpass -e ssh athena $argv
-end
-
 # Type - to move up to top parent dir which is a repository
 function d
 	while test $PWD != "/"
@@ -148,6 +144,8 @@ function fish_prompt
 	set_color brblack
 	echo -n "["(date "+%H:%M")"] "
 	set_color blue
+	printf '%s' (__k8s_server_prompt)
+	printf '[%s]' (__k8s_ns_prompt)
 	if [ $PWD != $HOME ]
 		set_color brblack
 		echo -n ':'
