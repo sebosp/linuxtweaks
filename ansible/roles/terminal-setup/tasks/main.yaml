@@ -44,3 +44,17 @@
     src: '{{ target_user_home }}/.config/fish/repo/kubectl.fish'
     path: '{{ target_user_home }}/.config/fish/completions/kubectl.fish'
 
+- name: Configure zsh directory
+  file:
+    ensure: path
+    dst: '{{ target_user_home }}/.zsh/'
+
+- name: Configure zsh/functions directory
+  file:
+    ensure: path
+    dst: '{{ target_user_home }}/.zsh/functions'
+
+- name: Configure zsh
+  file:
+    src: prompt_common.zsh
+    dst: '{{ target_user_home }}/.zsh/functions/prompt_common'
