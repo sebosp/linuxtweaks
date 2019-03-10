@@ -1,4 +1,3 @@
-# Taken from jonhoo's github
 abbr -a yr 'cal -y'
 abbr -a c cargo
 abbr -a e nvim
@@ -17,6 +16,13 @@ if status --is-interactive
 	tmux ^ /dev/null; and exec true
 end
 
+export K8S_PS1_SHOW=1
+export AWS_PS1_SHOW=0
+export K8S_PROMPT_TTL=15
+export AWS_PROMPT_TTL=15
+export K8S_LAST_NS_PROMPT_CHECK=1
+export K8S_LAST_CTX_PROMPT_CHECK=1
+export AWS_LAST_PROMPT_CHECK=1
 if command -v aurman > /dev/null
 	abbr -a p 'aurman'
 	abbr -a up 'aurman -Syu'
@@ -41,6 +47,9 @@ end
 if test -f /usr/share/autojump/autojump.fish;
 	source /usr/share/autojump/autojump.fish;
 end
+
+# Init the k8s and aws prompts
+fish_k8s_prompt
 
 function ssh
 	switch $argv[1]
@@ -75,24 +84,6 @@ function remote_alacritty
 	ssh $argv[1] rm "alacritty.ti"
 end
 
-function remarkable
-	if test (count $argv) -lt 1
-		echo "No files given"
-		return
-	end
-
-	ip addr show up to 10.11.99.0/29 | grep enp0s20f0u2 >/dev/null
-	if test $status -ne 0
-		# not yet connected
-		echo "Connecting to reMarkable internal network"
-		sudo dhcpcd enp0s20f0u2
-	end
-	for f in $argv
-		curl --form "file=@"$f http://10.11.99.1/upload
-		echo
-	end
-end
-
 # Type - to move up to top parent dir which is a repository
 function d
 	while test $PWD != "/"
@@ -101,6 +92,16 @@ function d
 		end
 		cd ..
 	end
+end
+
+# Find config files for terraform, python, yamls, jsons in current dir
+function ff
+    # TODO: Does not support space separated... need $@
+    if [ -z $argv[1] ]
+      echo "Missing search argument" 1>&2
+      return
+   end
+   find . -type f -name '*.yaml' -o -name '*.yml' -o -name '*.json' -o -name '*.py' -o -name '*.tf*' -exec grep -Hi $argv[1] {} \;
 end
 
 # Fish git prompt
@@ -143,9 +144,17 @@ end
 function fish_prompt
 	set_color brblack
 	echo -n "["(date "+%H:%M")"] "
+	if [ $K8S_PS1_SHOW = 1 ]
+		set_color green
+		printf '%s[' (fish_k8s_server_prompt)
+		fish_k8s_ns_prompt
+		set_color green
+		printf ']'
+	end
 	set_color blue
-	printf '%s' (__k8s_server_prompt)
-	printf '[%s]' (__k8s_ns_prompt)
+	if [ $AWS_PS1_SHOW = 1 ]
+		printf '@%s' (fish_aws_role_prompt)
+	end
 	if [ $PWD != $HOME ]
 		set_color brblack
 		echo -n ':'
