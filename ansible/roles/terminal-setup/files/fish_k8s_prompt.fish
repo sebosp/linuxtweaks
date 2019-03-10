@@ -1,11 +1,3 @@
-function ff
-    if [ -z "$1" ]
-      echo "Missing search argument" 1>&2
-      return
-   end
-   find . -type f -name '*.yaml' -o -name '*.yml' -o -name '*.json' -o -name '*.py' -o -name '*.tf*' -exec grep -Hi "$1" {} \;
-end
-
 function fish_k8s_server_prompt
   # Use this var to control display of the K8S prompt.
   if [ "1" = "$K8S_PS1_SHOW" ]
