@@ -68,3 +68,8 @@
   file:
     src: fish.config
     dst: '{{ target_user_home }}/.config/fish/config.fish'
+
+- name: Kubernetes and AWS prompts
+  file:
+    src: fish_k8s_prompt.fish
+    dst: '{{ target_user_home }}/.config/fish/functions/fish_k8s_prompt.fish'
