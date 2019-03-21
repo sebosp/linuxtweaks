@@ -24,6 +24,7 @@ ZSH_THEME="powerlevel9k/powerlevel9k"
 # a theme from this variable instead of looking in ~/.oh-my-zsh/themes/
 # If set to an empty array, this variable will have no effect.
 # ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
+export POWERLEVEL9K_INSTALLATION_DIR=/usr/share/zsh-theme-powerlevel9k/
 
 # Uncomment the following line to use case-sensitive completion.
 # CASE_SENSITIVE="true"
@@ -64,7 +65,7 @@ DISABLE_AUTO_UPDATE="true"
 # HIST_STAMPS="mm/dd/yyyy"
 
 # Would you like to use another custom folder than $ZSH/custom?
-# ZSH_CUSTOM=/path/to/new-custom-folder
+ZSH_CUSTOM=$HOME/.zsh/plugins/
 
 # Which plugins would you like to load?
 # Standard plugins can be found in ~/.oh-my-zsh/plugins/*
@@ -89,7 +90,7 @@ plugins=(
 
 # Preferred editor for local and remote sessions
 # if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
+export EDITOR='vim'
 # else
 #   export EDITOR='mvim'
 # fi
@@ -113,6 +114,15 @@ ZSH_CACHE_DIR=$HOME/.oh-my-zsh/cache
 if [[ ! -d $ZSH_CACHE_DIR ]]; then
   mkdir $ZSH_CACHE_DIR
 fi
+
+source $ZSH/oh-my-zsh.sh
+powerline-daemon -q
+# source /usr/lib/python3.7/site-packages/powerline/bindings/zsh/powerline.zsh
+# ZSH_THEME="powerline"
+# source /usr/share/zsh-theme-powerlevel9k/powerlevel9k.zsh-theme
+# ZSH_THEME="powerlevel9k/powerlevel9k"
+#source ~/.zsh/themes/materialshell.zsh-theme
+#ZSH_THEME="materialshell"
 source /usr/local/share/zsh/site-functions
 source $HOME/.zsh/functions/*
 source $HOME/.oh-my-zsh/oh-my-zsh.sh
