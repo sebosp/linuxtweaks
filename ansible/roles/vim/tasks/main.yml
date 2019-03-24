@@ -11,11 +11,23 @@
   package:
     name: neovim
 
-- name: Create nvim config
-  path:
+- name: ensure ~/.config exists
+  file:
+    ensure: dir
+    path: '{{ target_user_home }}/.config/'
+
+- name: Ensure ~/.config/nvim exists
+  file:
+    ensure: dir
+    path: '{{ target_user_home }}/.config/nvim'
 
 - name: Main nvim config file
   file:
     src: init.vim
     dst: '{{ target_user_home }}/.config/nvim/init.vim'
+
+- name: Create language server configuration file
+  file:
+    src: settings.json
+    dst: '{{ target_user_home }}/.config/nvim/settings.json'
 
