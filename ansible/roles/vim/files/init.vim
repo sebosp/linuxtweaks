@@ -1,8 +1,16 @@
 " Fish doesn't play all that well with others
 set shell=/bin/bash
 let mapleader = "\<Space>"
-let g:python_host_prog = '/usr/bin/python2.7'
-let g:python3_host_prog = '/usr/bin/python3'
+if !empty($VIRTUAL_ENV)
+    let g:python_host_prog = $VIRTUAL_ENV.'/bin/python'
+    let g:LanguageClient_serverCommands = {
+    \'python' : [ $VIRTUAL_ENV.'/bin/pyls', ]
+    \ }
+else
+    let g:python_host_prog = '/usr/bin/python2.7'
+endif
+
+let g:python3_host_prog = '/usr/local/bin/python3'
 
 " =============================================================================
 " # TESTING UTILS
@@ -25,9 +33,13 @@ autocmd FileType rust nmap <leader>tC :RunBg cargo test -- --nocapture<CR>
 autocmd FileType rust nmap <leader>b :!cargo build<CR>
 autocmd FileType rust set ts=4 sw=4 et
 autocmd FileType rust let g:syntastic_rust_checkers = ['cargo']
-"let b:ale_linters = {'rust': ['rls','cargo','rustc']}
-"let g:ale_fixers = {'rust': ['rustfmt']}
-"let g:ale_completion_enabled = 1
+autocmd FileType rust let b:ale_linters = {'rust': ['rls','cargo','rustc']}
+autocmd FileType rust let g:ale_fixers = {'rust': ['rustfmt']}
+autocmd FileType rust let g:ale_completion_enabled = 1
+
+" Check Python files with flake8 and pylint.
+autocmd FileType python let b:ale_linters = ['pycodestyle']
+autocmd FileType python let b:ale_fixers = [ 'autopep8', 'yapf' ]
 " =============================================================================
 " # RUN TESTS IN BACKGROUND
 " =============================================================================
@@ -155,6 +167,9 @@ Plug 'plasticboy/vim-markdown'
 Plug 'tikhomirov/vim-glsl'
 Plug 'tpope/vim-fugitive'
 
+Plug 'maximbaz/lightline-ale'
+Plug 'lepture/vim-jinja'
+
 call plug#end()
 
 if has('nvim')
@@ -206,6 +221,22 @@ function! LightlineFilename()
   return expand('%:t') !=# '' ? @% : '[No Name]'
 endfunction
 
+let g:lightline.component_expand = {
+      \  'linter_checking': 'lightline#ale#checking',
+      \  'linter_warnings': 'lightline#ale#warnings',
+      \  'linter_errors': 'lightline#ale#errors',
+      \  'linter_ok': 'lightline#ale#ok',
+      \ }
+
+let g:lightline.component_type = {
+      \     'linter_checking': 'left',
+      \     'linter_warnings': 'warning',
+      \     'linter_errors': 'error',
+      \     'linter_ok': 'left',
+      \ }
+
+let g:lightline.active = { 'right': [[ 'linter_checking', 'linter_errors', 'linter_warnings', 'linter_ok' ]] }
+
 " from http://sheerun.net/2014/03/21/how-to-boost-your-vim-productivity/
 if executable('ag')
 	set grepprg=ag\ --nogroup\ --nocolor
@@ -227,8 +258,54 @@ let g:ale_lint_on_enter = 0
 let g:ale_rust_cargo_use_check = 1
 let g:ale_rust_cargo_check_all_targets = 1
 let g:ale_virtualtext_cursor = 0
-" let g:neomake_info_sign = {'text': '⚕', 'texthl': 'NeomakeInfoSign'}
+" language server protocol
+" work around the lack of a global language client settings file:
+" https://github.com/rust-lang/rls/issues/1324
+" https://github.com/autozimu/LanguageClient-neovim/issues/431
+" I primarily want that for the ability to set `build_on_save`,
+" which I in turn want because of
+" https://github.com/autozimu/LanguageClient-neovim/issues/603
+let g:LanguageClient_settingsPath = expand('~/.config/nvim/settings.json')
+autocmd FileType rust let g:LanguageClient_serverCommands = {
+    \ 'rust': ['env', 'CARGO_TARGET_DIR=/Users/sebastian.ospina/cargo-target/rls', 'rls'],
+    \ }
+let g:LanguageClient_autoStart = 1
+nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
+nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
+nnoremap <silent> <F2> :call LanguageClient_textDocument_rename()<CR>
+" don't make errors so painful to look at
+let g:LanguageClient_diagnosticsDisplay = {
+    \     1: {
+    \         "name": "Error",
+    \         "texthl": "ALEError",
+    \         "signText": "✖",
+    \         "signTexthl": "ErrorMsg",
+    \         "virtualTexthl": "WarningMsg",
+    \     },
+    \     2: {
+    \         "name": "Warning",
+    \         "texthl": "ALEWarning",
+    \         "signText": "⚠",
+    \         "signTexthl": "ALEWarningSign",
+    \         "virtualTexthl": "Todo",
+    \     },
+    \     3: {
+    \         "name": "Information",
+    \         "texthl": "ALEInfo",
+    \         "signText": "ℹ",
+    \         "signTexthl": "ALEInfoSign",
+    \         "virtualTexthl": "Todo",
+    \     },
+    \     4: {
+    \         "name": "Hint",
+    \         "texthl": "ALEInfo",
+    \         "signText": "➤",
+    \         "signTexthl": "ALEInfoSign",
+    \         "virtualTexthl": "Todo",
+    \     },
+    \ }
 
+let g:neomake_info_sign = {'text': '⚕', 'texthl': 'NeomakeInfoSign'}
 " Latex
 let g:latex_indent_enabled = 1
 let g:latex_fold_envs = 0
@@ -243,16 +320,6 @@ nmap <leader>w :w<CR>
 
 " Don't confirm .lvimrc
 let g:localvimrc_ask = 0
-
-" language server protocol
-let g:LanguageClient_settingsPath = "/home/seb/.vim/settings.json"
-let g:LanguageClient_serverCommands = {
-    \ 'rust': ['env', 'CARGO_TARGET_DIR=/data/git/cargo-target/rls', 'rls'],
-    \ }
-let g:LanguageClient_autoStart = 1
-nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
-nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
-nnoremap <silent> <F2> :call LanguageClient_textDocument_rename()<CR>
 
 " racer + rust
 " https://github.com/rust-lang/rust.vim/issues/192
@@ -303,6 +370,8 @@ let g:vim_markdown_frontmatter = 1
 set printfont=:h10
 set printencoding=utf-8
 set printoptions=paper:letter
+" Always draw sign column. Prevent buffer moving when adding/deleting sign.
+set signcolumn=yes
 
 " Settings needed for .lvimrc
 set exrc
@@ -328,9 +397,7 @@ set tabstop=4
 set noexpandtab
 
 " Use short tabs for yaml
-au FileType yaml set shiftwidth=2
-au FileType yaml set softtabstop=2
-au FileType yaml set tabstop=2
+autocmd FileType yaml set shiftwidth=2 softtabstop=2 tabstop=2 noexpandtab nosmartindent noautoindent
 
 " Get syntax
 syntax on
@@ -346,7 +413,7 @@ set formatoptions+=b " auto-wrap in insert mode, and do not wrap old long lines
 set incsearch
 set ignorecase
 set smartcase
-set gdefault
+" set gdefault
 
 " Search results centered please
 " nnoremap <silent> n nzz
@@ -387,8 +454,8 @@ set shortmess+=c " don't give |ins-completion-menu| messages.
 set background=dark
 colorscheme PaperColor
 "hi Normal ctermbg=NONE
-au FileType rust highlight rightMargin ctermbg=233
-au FileType rust 2match rightMargin /.\%>80v/
+highlight rightMargin ctermbg=233
+2match rightMargin /.\%>80v/
 
 " =============================================================================
 " # HILIGHT CURRENT WORD
@@ -410,8 +477,7 @@ augroup END
 " Show those damn hidden characters
 " Verbose: set listchars=nbsp:¬,eol:¶,extends:»,precedes:«,trail:•
 set list
-" set listchars=nbsp:¬,extends:»,precedes:«,trail:•
-set lcs=tab:>-,eol:$
+set listchars=nbsp:¬,extends:»,precedes:«,trail:•,tab:>-,eol:$
 
 " =============================================================================
 " # Keyboard shortcuts
@@ -487,7 +553,8 @@ nnoremap <C-g> :cclose<cr>
 nnoremap <leader><leader> <c-^>
 
 " <leader>= reformats current tange
-nnoremap <leader>= :'<,'>RustFmtRange<cr>
+nnoremap <leader>= :ALEFix<cr>
+autocmd FileType rust nnoremap <leader>= :'<,'>RustFmtRange<cr>
 
 " <leader>, shows/hides hidden characters
 nnoremap <leader>, :set invlist<cr>
@@ -529,7 +596,9 @@ autocmd BufWritePost *.less if filereadable("Makefile") | make | endif
 
 " Follow Rust code style rules
 au Filetype rust source ~/.config/nvim/scripts/spacetab.vim
-"au Filetype rust set colorcolumn=100
+" au Filetype rust set colorcolumn=100
+highlight rightMargin ctermbg=233
+2match rightMargin /.\%>100v/
 
 " Help filetype detection
 autocmd BufRead *.plot set filetype=gnuplot
@@ -558,3 +627,5 @@ highlight GitGutterAdd ctermfg=green
 highlight GitGutterChange ctermfg=yellow
 highlight GitGutterDelete ctermfg=red
 highlight GitGutterChangeDelete ctermfg=yellow
+" Remove autoindent from localfile
+nnoremap <leader>f :setl noai nocin nosi inde=<CR>
