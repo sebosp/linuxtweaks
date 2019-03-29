@@ -397,7 +397,7 @@ set tabstop=4
 set noexpandtab
 
 " Use short tabs for yaml
-autocmd FileType yaml set shiftwidth=2 softtabstop=2 tabstop=2 noexpandtab nosmartindent noautoindent
+autocmd FileType yaml set shiftwidth=2 softtabstop=2 tabstop=2 expandtab nosmartindent noautoindent
 
 " Get syntax
 syntax on
