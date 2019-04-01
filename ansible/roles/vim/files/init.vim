@@ -197,16 +197,16 @@ let g:secure_modelines_allowed_items = [
                 \ ]
 
 " Base16
-let base16colorspace=256
-let g:base16_shell_path="~/dev/others/base16/shell/scripts/"
+" let base16colorspace=256
+" let g:base16_shell_path="~/dev/others/base16/shell/scripts/"
 
 " Lightline
-let g:lightline = { 'colorscheme': 'wombat' }
 let g:lightline = {
+	  \ 'colorscheme': 'PaperColor_dark',
       \ 'active': {
       \ 'left': [ [ 'mode', 'paste' ],
       \           [ 'gitbranch', 'readonly', 'filename', 'modified' ] ],
-      \  'right': [
+      \  'right': [ [ 'linter_checking', 'linter_errors', 'linter_warnings', 'linter_ok' ],
       \             ['teststatus'], ['lineinfo'],
       \             ['percent'], ['fileformat', 'fileencoding', 'filetype']
       \           ]
@@ -235,7 +235,6 @@ let g:lightline.component_type = {
       \     'linter_ok': 'left',
       \ }
 
-let g:lightline.active = { 'right': [[ 'linter_checking', 'linter_errors', 'linter_warnings', 'linter_ok' ]] }
 
 " from http://sheerun.net/2014/03/21/how-to-boost-your-vim-productivity/
 if executable('ag')
