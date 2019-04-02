@@ -266,7 +266,7 @@ let g:ale_virtualtext_cursor = 0
 " https://github.com/autozimu/LanguageClient-neovim/issues/603
 let g:LanguageClient_settingsPath = expand('~/.config/nvim/settings.json')
 autocmd FileType rust let g:LanguageClient_serverCommands = {
-    \ 'rust': ['env', 'CARGO_TARGET_DIR=/Users/sebastian.ospina/cargo-target/rls', 'rls'],
+    \ 'rust': ['env', 'CARGO_TARGET_DIR='.$HOME.'/cargo-target/rls', 'rls'],
     \ }
 let g:LanguageClient_autoStart = 1
 nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
