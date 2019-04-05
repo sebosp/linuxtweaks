@@ -552,8 +552,8 @@ nnoremap <C-g> :cclose<cr>
 nnoremap <leader><leader> <c-^>
 
 " <leader>= reformats current tange
-nnoremap <leader>= :ALEFix<cr>
-autocmd FileType rust nnoremap <leader>= :'<,'>RustFmtRange<cr>
+au Filetype rust nnoremap <leader>= :'<,'>RustFmtRange<cr>
+au Filetype python nnoremap <leader>= :ALEFix<cr>
 
 " <leader>, shows/hides hidden characters
 nnoremap <leader>, :set invlist<cr>
@@ -596,8 +596,6 @@ autocmd BufWritePost *.less if filereadable("Makefile") | make | endif
 " Follow Rust code style rules
 au Filetype rust source ~/.config/nvim/scripts/spacetab.vim
 " au Filetype rust set colorcolumn=100
-highlight rightMargin ctermbg=233
-2match rightMargin /.\%>100v/
 
 " Help filetype detection
 autocmd BufRead *.plot set filetype=gnuplot
@@ -626,5 +624,9 @@ highlight GitGutterAdd ctermfg=green
 highlight GitGutterChange ctermfg=yellow
 highlight GitGutterDelete ctermfg=red
 highlight GitGutterChangeDelete ctermfg=yellow
-" Remove autoindent from localfile
-nnoremap <leader>f :setl noai nocin nosi inde=<CR>
+" Check Python files with flake8 and pylint.
+au FileType python let b:ale_linters = ['flake8', 'pylint']
+" Fix Python files with autopep8 and yapf.
+au FileType python let b:ale_fixers = ['autopep8', 'yapf']
+" Disable warnings about trailing whitespace for Python files.
+au FileType python let b:ale_warn_about_trailing_whitespace = 0
