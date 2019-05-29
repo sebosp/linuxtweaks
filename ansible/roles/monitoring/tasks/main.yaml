@@ -1,6 +1,23 @@
-- name: Install Prometheus
+- name: Install Prometheus Tools
   package:
-    name: {{ item }}
+    name: "{{ item }}"
+  with_items:
+    - prometheus
+    - prometheus-node-exporter
+
+- name: Provide config for Prometheus
+  copy:
+    src: prometheus.yml
+    dest: /etc/prometheus/prometheus.yml
+    mode: 0644
+    owner: root
+  notify: restart prometheus
+
+- name: Start and enable Prometheus services
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
   with_items:
     - prometheus
     - prometheus-node-exporter
