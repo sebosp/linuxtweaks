@@ -268,6 +268,9 @@ let g:LanguageClient_settingsPath = expand('~/.config/nvim/settings.json')
 autocmd FileType rust let g:LanguageClient_serverCommands = {
     \ 'rust': ['env', 'CARGO_TARGET_DIR='.$HOME.'/cargo-target/rls', 'rls'],
     \ }
+autocmd FileType go let g:LanguageClient_serverCommands = {
+    \ 'go': ['gopls']
+    \ }
 let g:LanguageClient_autoStart = 1
 nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
 nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
@@ -552,7 +555,8 @@ nnoremap <C-g> :cclose<cr>
 nnoremap <leader><leader> <c-^>
 
 " <leader>= reformats current tange
-au Filetype rust nnoremap <leader>= :'<,'>RustFmtRange<cr>
+au Filetype rust nnoremap <leader>- :'<,'>RustFmtRange<cr>
+au Filetype rust nnoremap <leader>= :RustFmt<cr>
 au Filetype python nnoremap <leader>= :ALEFix<cr>
 
 " <leader>, shows/hides hidden characters
@@ -633,3 +637,8 @@ au FileType python let b:ale_fixers = ['autopep8', 'yapf']
 set expandtab
 " Disable warnings about trailing whitespace for Python files.
 au FileType python let b:ale_warn_about_trailing_whitespace = 0
+" Vertical diffs for git merge
+set diffopt+=vertical
+au FileType go let g:ale_linters = {
+	\ 'go': ['gopls'],
+	\}
