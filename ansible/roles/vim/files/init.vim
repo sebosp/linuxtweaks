@@ -268,6 +268,9 @@ let g:LanguageClient_settingsPath = expand('~/.config/nvim/settings.json')
 autocmd FileType rust let g:LanguageClient_serverCommands = {
     \ 'rust': ['env', 'CARGO_TARGET_DIR='.$HOME.'/cargo-target/rls', 'rls'],
     \ }
+autocmd FileType go let g:LanguageClient_serverCommands = {
+    \ 'go': ['gopls']
+    \ }
 let g:LanguageClient_autoStart = 1
 nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
 nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
@@ -422,9 +425,9 @@ set smartcase
 " nnoremap <silent> g* g*zz
 
 " Very magic by default
-nnoremap ? ?\v
-nnoremap / /\v
-cnoremap %s/ %sm/
+" nnoremap ? ?\v
+" nnoremap / /\v
+" cnoremap %s/ %sm/
 
 " =============================================================================
 " # GUI settings
@@ -552,7 +555,8 @@ nnoremap <C-g> :cclose<cr>
 nnoremap <leader><leader> <c-^>
 
 " <leader>= reformats current tange
-au Filetype rust nnoremap <leader>= :'<,'>RustFmtRange<cr>
+au Filetype rust nnoremap <leader>- :'<,'>RustFmtRange<cr>
+au Filetype rust nnoremap <leader>= :RustFmt<cr>
 au Filetype python nnoremap <leader>= :ALEFix<cr>
 
 " <leader>, shows/hides hidden characters
@@ -594,7 +598,7 @@ endif
 autocmd BufWritePost *.less if filereadable("Makefile") | make | endif
 
 " Follow Rust code style rules
-au Filetype rust source ~/.config/nvim/scripts/spacetab.vim
+au Filetype rust set shiftwidth=4 softtabstop=4 tabstop=4 expandtab
 " au Filetype rust set colorcolumn=100
 
 " Help filetype detection
@@ -624,9 +628,17 @@ highlight GitGutterAdd ctermfg=green
 highlight GitGutterChange ctermfg=yellow
 highlight GitGutterDelete ctermfg=red
 highlight GitGutterChangeDelete ctermfg=yellow
+" Remove autoindent from localfile
+nnoremap <leader>f :setl noai nocin nosi inde=<CR>
 " Check Python files with flake8 and pylint.
 au FileType python let b:ale_linters = ['flake8', 'pylint']
 " Fix Python files with autopep8 and yapf.
 au FileType python let b:ale_fixers = ['autopep8', 'yapf']
+set expandtab
 " Disable warnings about trailing whitespace for Python files.
 au FileType python let b:ale_warn_about_trailing_whitespace = 0
+" Vertical diffs for git merge
+set diffopt+=vertical
+au FileType go let g:ale_linters = {
+	\ 'go': ['gopls'],
+	\}
