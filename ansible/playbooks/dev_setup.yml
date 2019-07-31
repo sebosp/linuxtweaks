@@ -21,3 +21,9 @@
     - name: Terminal Setup
       role: terminal-setup
 
+    - name: Terminal Setup
+      role: terminal-setup
+
+    - name: Monitoring
+      role: monitoring
+
