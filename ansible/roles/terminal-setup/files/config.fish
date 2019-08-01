@@ -14,8 +14,9 @@ abbr -a ct 'cargo t'
 abbr -a ais "aws ec2 describe-instances | jq '.Reservations[] | .Instances[] | {iid: .InstanceId, type: .InstanceType, key:.KeyName, state:.State.Name, host:.PublicDnsName}'"
 abbr -a gah 'git stash; and git pull --rebase; and git stash pop'
 
-if status --is-interactive
-	tmux ^ /dev/null; and exec true
+if status is-interactive
+	and not set -q TMUX
+	tmux new -t: || tmux new -s seb
 end
 
 set -gx K8SCTX ""
@@ -130,8 +131,6 @@ setenv LESS_TERMCAP_us \e'[04;38;5;146m' # begin underline
 # https://github.com/fish-shell/fish-shell/issues/2456
 setenv LD_LIBRARY_PATH (rustc +nightly --print sysroot)"/lib:$LD_LIBRARY_PATH"
 setenv RUST_SRC_PATH (rustc --print sysroot)"/lib/rustlib/src/rust/src"
-
-set -gx PATH "$PATH:/$HOME/.yarn/bin:/$HOME/.nvm/versions/node/v8.14.0/bin"
 
 setenv FZF_DEFAULT_COMMAND 'fd --type file --follow'
 setenv FZF_CTRL_T_COMMAND 'fd --type file --follow'
