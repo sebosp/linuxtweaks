@@ -73,3 +73,13 @@
   file:
     src: fish_k8s_prompt.fish
     dst: '{{ target_user_home }}/.config/fish/functions/fish_k8s_prompt.fish'
+
+- name: Screen pre-exec
+  file:
+    src: screen-preexec.sh
+    dst: '{{ target_user_home }}/screen-preexec.sh'
+
+- name: Pre-exec bash
+  file:
+    src: preexec.bash.sh
+    dst: '{{ target_user_home }}/preexec.bash.sh'
