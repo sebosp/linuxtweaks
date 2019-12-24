@@ -1,0 +1,4 @@
+{
+  "rust-analyzer.enableCargoWatchOnStartup": "disabled",
+  "tsserver.trace.server": "verbose"
+}
