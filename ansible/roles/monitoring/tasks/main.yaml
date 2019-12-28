@@ -5,6 +5,14 @@
     - prometheus
     - prometheus-node-exporter
 
+    - name: Low disk free (1GB) monitoring
+  copy:
+    src: file_system.yml
+    dest: /etc/prometheus/file_system.yml
+    mode: 0644
+    owner: root
+  notify: reload prometheus
+
 - name: Provide config for Prometheus
   copy:
     src: prometheus.yml

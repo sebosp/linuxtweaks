@@ -1,0 +1,11 @@
+groups:
+- name: low filesystem free
+  rules:
+  - alert: LowFilesystemFree
+    expr: node_filesystem_free_bytes{mountpoint!="/keybase"} < 1000000000
+    for: 10m
+    labels:
+      severity: page
+    annotations:
+      summary: Low Filesystem space
+
