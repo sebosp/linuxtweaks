@@ -1,6 +1,7 @@
 
 abbr -a yr 'cal -y'
 abbr -a c cargo
+abbr -a cat bat
 abbr -a e nvim
 abbr -a vim nvim
 abbr -a m make
@@ -14,13 +15,13 @@ abbr -a ct 'cargo t'
 abbr -a ais "aws ec2 describe-instances | jq '.Reservations[] | .Instances[] | {iid: .InstanceId, type: .InstanceType, key:.KeyName, state:.State.Name, host:.PublicDnsName}'"
 abbr -a gah 'git stash; and git pull --rebase; and git stash pop'
 
-if status --is-interactive
-	tmux ^ /dev/null; and exec true
-end
+#if status --is-interactive
+#	tmux new -t:; and exec true
+#end
 
 set -gx K8SCTX ""
 set -gx K8SNS ""
-set -gx K8S_PS1_SHOW 1
+set -gx K8S_PS1_SHOW 0
 set -gx AWS_PS1_SHOW 0
 set -gx K8S_PROMPT_TTL 5
 set -gx AWS_PROMPT_TTL 15
@@ -54,7 +55,21 @@ if test -f /usr/share/autojump/autojump.fish;
 end
 
 # Init the k8s and aws prompts
-# fish_k8s_prompt
+# source ~/.config/fish/completions/fish_k8s_prompt.fish
+
+function ls
+    if count $argv > /dev/null
+        switch $argv[1]
+        case "-ltra"
+            exa -la -s=mod $argv[2..-1]
+        case "*"
+            command ls $argv
+        end
+    else
+        command ls
+    end
+
+end
 
 function ssh
 	switch $argv[1]
@@ -109,6 +124,12 @@ function ff
    find . -type f -name '*.yaml' -o -name '*.yml' -o -name '*.json' -o -name '*.py' -o -name '*.tf*' -exec grep -Hi $argv[1] {} \;
 end
 
+function aws_clean
+    for var in AWS_SECRET_ACCESS_KEY AWS_ACCESS_KEY_ID AWS_PROFILE AWS_REGION KUBECONFIG;
+        set -e $var;
+    end
+end
+
 # Fish git prompt
 set __fish_git_prompt_showuntrackedfiles 'yes'
 set __fish_git_prompt_showdirtystate 'yes'
@@ -126,12 +147,9 @@ setenv LESS_TERMCAP_so \e'[38;5;246m'    # begin standout-mode - info box
 setenv LESS_TERMCAP_ue \e'[0m'           # end underline
 setenv LESS_TERMCAP_us \e'[04;38;5;146m' # begin underline
 
-# For RLS
-# https://github.com/fish-shell/fish-shell/issues/2456
-setenv LD_LIBRARY_PATH (rustc +nightly --print sysroot)"/lib:$LD_LIBRARY_PATH"
-setenv RUST_SRC_PATH (rustc --print sysroot)"/lib/rustlib/src/rust/src"
-
-set -gx PATH "$PATH:/$HOME/.yarn/bin:/$HOME/.nvm/versions/node/v8.14.0/bin"
+set -gx PATH "/home/sospina/.fzf/bin:/home/sospina/.cargo/bin:/home/sospina/.local/bin:/usr/local/bin:/usr/bin:/bin:/opt/puppetlabs/bin:/home/sospina/go/bin"
+set -gx GPG_TTY (tty)
+set -gx EDITOR nvim
 
 setenv FZF_DEFAULT_COMMAND 'fd --type file --follow'
 setenv FZF_CTRL_T_COMMAND 'fd --type file --follow'
@@ -156,7 +174,7 @@ function fish_prompt
 	end
 	set_color blue
 	if test $AWS_PS1_SHOW = 1
-		printf '@%s' (fish_aws_role_prompt)
+		printf '@%s' (fish_aws_profile_prompt)
 	end
 	if test "$PWD" != "$HOME"
 		set_color brblack
@@ -231,3 +249,23 @@ function fish_greeting
 
 	set_color normal
 end
+
+function kubectl
+    if test (echo $argv|grep -c -- -oyaml) = 1
+        /usr/bin/kubectl $argv|$HOME/.krew/bin/kubectl-neat |bat -lyaml
+    else
+        /usr/bin/kubectl $argv
+    end
+end
+
+# set -g fish_user_paths "/usr/local/opt/terraform@0.12/bin" $fish_user_paths
+# set -g fish_user_paths "/usr/local/opt/helm@2/bin" $fish_user_paths
+
+# Docker view full build output and stop parallel behavior
+set -gx DOCKER_BUILDKIT 0
+set -gx BAT_STYLE plain
+set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
+set -gx TERM screen-256color
+set -gx TMPDIR "/tmp"
+starship init fish | source
+set -gx PATH $PATH $HOME/.krew/bin
