@@ -1,13 +1,18 @@
 " Fish doesn't play all that well with others
-set shell=/bin/bash
+" profile start profile.log
+" profile func *
+" profile file *
+" set shell=/bin/bash
 let mapleader = "\<Space>"
 if !empty($VIRTUAL_ENV)
     let g:python_host_prog = $VIRTUAL_ENV.'/bin/python'
+    let g:python3_host_prog = $VIRTUAL_ENV.'/bin/python'
     let g:LanguageClient_serverCommands = {
     \'python' : [ $VIRTUAL_ENV.'/bin/pyls', ]
     \ }
 else
     let g:python_host_prog = '/usr/bin/python2.7'
+    let g:python3_host_prog = '/usr/bin/python3'
 endif
 
 let g:python3_host_prog = '/usr/local/bin/python3'
@@ -127,12 +132,12 @@ call plug#begin()
 " Load plugins
 " VIM enhancements
 Plug 'ciaranm/securemodelines'
-Plug 'vim-scripts/localvimrc'
+Plug 'editorconfig/editorconfig-vim'
 Plug 'justinmk/vim-sneak'
 
 " GUI enhancements
 Plug 'itchyny/lightline.vim'
-Plug 'w0rp/ale'
+"Plug 'w0rp/ale'
 Plug 'machakann/vim-highlightedyank'
 Plug 'andymass/vim-matchup'
 
@@ -142,33 +147,23 @@ Plug 'airblade/vim-gitgutter'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 
-" Semantic language support
-"Plug 'phildawes/racer'
-"Plug 'racer-rust/vim-racer'
-Plug 'autozimu/LanguageClient-neovim', {
-    \ 'branch': 'next',
-    \ 'do': 'bash install.sh',
-    \ }
-Plug 'ncm2/ncm2'
-Plug 'roxma/nvim-yarp'
-
-" Completion plugins
-Plug 'ncm2/ncm2-bufword'
-Plug 'ncm2/ncm2-tmux'
-Plug 'ncm2/ncm2-path'
+" Use release branch
+Plug 'neoclide/coc.nvim'
 
 " Syntactic language support
 Plug 'cespare/vim-toml'
+Plug 'stephpy/vim-yaml'
 Plug 'rust-lang/rust.vim'
-"Plug 'fatih/vim-go'
+" Plug 'fatih/vim-go'
 Plug 'dag/vim-fish'
 Plug 'godlygeek/tabular'
 Plug 'plasticboy/vim-markdown'
 Plug 'tikhomirov/vim-glsl'
 Plug 'tpope/vim-fugitive'
 
-Plug 'maximbaz/lightline-ale'
+"Plug 'maximbaz/lightline-ale'
 Plug 'lepture/vim-jinja'
+Plug 'tpope/vim-abolish'
 
 call plug#end()
 
@@ -221,12 +216,12 @@ function! LightlineFilename()
   return expand('%:t') !=# '' ? @% : '[No Name]'
 endfunction
 
-let g:lightline.component_expand = {
-      \  'linter_checking': 'lightline#ale#checking',
-      \  'linter_warnings': 'lightline#ale#warnings',
-      \  'linter_errors': 'lightline#ale#errors',
-      \  'linter_ok': 'lightline#ale#ok',
-      \ }
+"let g:lightline.component_expand = {
+"      \  'linter_checking': 'lightline#ale#checking',
+"      \  'linter_warnings': 'lightline#ale#warnings',
+"      \  'linter_errors': 'lightline#ale#errors',
+"      \  'linter_ok': 'lightline#ale#ok',
+"      \ }
 
 let g:lightline.component_type = {
       \     'linter_checking': 'left',
@@ -249,14 +244,14 @@ endif
 let javaScript_fold=0
 
 " Linter
-let g:ale_sign_column_always = 1
+" let g:ale_sign_column_always = 1
 " only lint on save
-let g:ale_lint_on_text_changed = 'never'
-let g:ale_lint_on_save = 0
-let g:ale_lint_on_enter = 0
-let g:ale_rust_cargo_use_check = 1
-let g:ale_rust_cargo_check_all_targets = 1
-let g:ale_virtualtext_cursor = 0
+" let g:ale_lint_on_text_changed = 'never'
+" let g:ale_lint_on_save = 0
+" let g:ale_lint_on_enter = 0
+" let g:ale_rust_cargo_use_check = 1
+" let g:ale_rust_cargo_check_all_targets = 1
+" let g:ale_virtualtext_cursor = 0
 " language server protocol
 " work around the lack of a global language client settings file:
 " https://github.com/rust-lang/rls/issues/1324
@@ -276,36 +271,36 @@ nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
 nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
 nnoremap <silent> <F2> :call LanguageClient_textDocument_rename()<CR>
 " don't make errors so painful to look at
-let g:LanguageClient_diagnosticsDisplay = {
-    \     1: {
-    \         "name": "Error",
-    \         "texthl": "ALEError",
-    \         "signText": "✖",
-    \         "signTexthl": "ErrorMsg",
-    \         "virtualTexthl": "WarningMsg",
-    \     },
-    \     2: {
-    \         "name": "Warning",
-    \         "texthl": "ALEWarning",
-    \         "signText": "⚠",
-    \         "signTexthl": "ALEWarningSign",
-    \         "virtualTexthl": "Todo",
-    \     },
-    \     3: {
-    \         "name": "Information",
-    \         "texthl": "ALEInfo",
-    \         "signText": "ℹ",
-    \         "signTexthl": "ALEInfoSign",
-    \         "virtualTexthl": "Todo",
-    \     },
-    \     4: {
-    \         "name": "Hint",
-    \         "texthl": "ALEInfo",
-    \         "signText": "➤",
-    \         "signTexthl": "ALEInfoSign",
-    \         "virtualTexthl": "Todo",
-    \     },
-    \ }
+"let g:LanguageClient_diagnosticsDisplay = {
+"    \     1: {
+"    \         "name": "Error",
+"    \         "texthl": "ALEError",
+"    \         "signText": "✖",
+"    \         "signTexthl": "ErrorMsg",
+"    \         "virtualTexthl": "WarningMsg",
+"    \     },
+"    \     2: {
+"    \         "name": "Warning",
+"    \         "texthl": "ALEWarning",
+"    \         "signText": "⚠",
+"    \         "signTexthl": "ALEWarningSign",
+"    \         "virtualTexthl": "Todo",
+"    \     },
+"    \     3: {
+"    \         "name": "Information",
+"    \         "texthl": "ALEInfo",
+"    \         "signText": "ℹ",
+"    \         "signTexthl": "ALEInfoSign",
+"    \         "virtualTexthl": "Todo",
+"    \     },
+"    \     4: {
+"    \         "name": "Hint",
+"    \         "texthl": "ALEInfo",
+"    \         "signText": "➤",
+"    \         "signTexthl": "ALEInfoSign",
+"    \         "virtualTexthl": "Todo",
+"    \     },
+"    \ }
 
 let g:neomake_info_sign = {'text': '⚕', 'texthl': 'NeomakeInfoSign'}
 " Latex
@@ -332,21 +327,42 @@ let g:rustfmt_fail_silently = 0
 let g:rust_clip_command = 'xclip -selection clipboard'
 "let g:racer_cmd = "/usr/bin/racer"
 "let g:racer_experimental_completer = 1
-let $RUST_SRC_PATH = systemlist("rustc --print sysroot")[0] . "/lib/rustlib/src/rust/src"
+" let $RUST_SRC_PATH = systemlist("rustc --print sysroot")[0] . "/lib/rustlib/src/rust/src"
 
-" Completion
-autocmd BufEnter * call ncm2#enable_for_buffer()
-set completeopt=noinsert,menuone,noselect
 " tab to select
 " and don't hijack my enter key
-inoremap <expr><Tab> (pumvisible()?(empty(v:completed_item)?"\<C-n>":"\<C-y>"):"\<Tab>")
-inoremap <expr><CR> (pumvisible()?(empty(v:completed_item)?"\<CR>\<CR>":"\<C-y>"):"\<CR>")
+"inoremap <expr><Tab> (pumvisible()?(empty(v:completed_item)?"\<C-n>":"\<C-y>"):"\<Tab>")
+"inoremap <expr><CR> (pumvisible()?(empty(v:completed_item)?"\<CR>\<CR>":"\<C-y>"):"\<CR>")
+" Completion
+" Better display for messages
+set cmdheight=2
+" You will have bad experience for diagnostic messages when it's default 4000.
+set updatetime=300
+" Use tab for trigger completion with characters ahead and navigate.
+" Use command ':verbose imap <tab>' to make sure tab is not mapped by other plugin.
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+" Use <c-.> to trigger completion.
+inoremap <silent><expr> <c-.> coc#refresh()
+" Use <cr> to confirm completion, `<C-g>u` means break undo chain at current position.
+" Coc only does snippet and additional edit on confirm.
+" inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+" Or use `complete_info` if your vim support it, like:
+" inoremap <expr> <cr> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
+"
 
 " Golang
 let g:go_play_open_browser = 0
 let g:go_fmt_fail_silently = 1
 let g:go_fmt_command = "goimports"
-let g:go_bin_path = expand("~/go/bin")
+" let g:go_bin_path = expand("~/go/bin")
 
 " =============================================================================
 " # Editor settings
@@ -458,6 +474,7 @@ colorscheme PaperColor
 "hi Normal ctermbg=NONE
 highlight rightMargin ctermbg=233
 2match rightMargin /.\%>80v/
+" set colorcolumn=80
 
 " =============================================================================
 " # HILIGHT CURRENT WORD
@@ -545,11 +562,28 @@ nnoremap k gk
 " Jump to next/previous error
 nnoremap <C-j> :cnext<cr>
 nnoremap <C-k> :cprev<cr>
-nmap <silent> L <Plug>(ale_lint)
+"nmap <silent> L <Plug>(ale_lint)
 "nmap <silent> <C-k> <Plug>(ale_previous_wrap)
 "nmap <silent> <C-j> <Plug>(ale_next_wrap)
 nnoremap <C-l> :copen<cr>
 nnoremap <C-g> :cclose<cr>
+
+" 'Smart' nevigation
+nmap <silent> E <Plug>(coc-diagnostic-prev)
+nmap <silent> W <Plug>(coc-diagnostic-next)
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+" Use K to show documentation in preview window
+nnoremap <silent> K :call <SID>show_documentation()<CR>
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
 
 " <leader><leader> toggles between buffers
 nnoremap <leader><leader> <c-^>
@@ -557,7 +591,11 @@ nnoremap <leader><leader> <c-^>
 " <leader>= reformats current tange
 au Filetype rust nnoremap <leader>- :'<,'>RustFmtRange<cr>
 au Filetype rust nnoremap <leader>= :RustFmt<cr>
-au Filetype python nnoremap <leader>= :ALEFix<cr>
+au Filetype go nnoremap <leader>= :GoFmt<cr>
+au Filetype go set noexpandtab
+au Filetype python nnoremap <leader>= :call CocAction('format')<cr>
+au Filetype javascript nnoremap <leader>= :call CocAction('format')<cr>
+" au Filetype python nnoremap <leader>= :ALEFix<cr>
 
 " <leader>, shows/hides hidden characters
 nnoremap <leader>, :set invlist<cr>
@@ -607,6 +645,7 @@ autocmd BufRead *.md set filetype=markdown
 autocmd BufRead *.lds set filetype=ld
 autocmd BufRead *.tex set filetype=tex
 autocmd BufRead *.trm set filetype=c
+autocmd BufRead *.hcl set filetype=tf
 autocmd BufRead *.xlsx.axlsx set filetype=ruby
 
 " Script plugins
@@ -631,14 +670,18 @@ highlight GitGutterChangeDelete ctermfg=yellow
 " Remove autoindent from localfile
 nnoremap <leader>f :setl noai nocin nosi inde=<CR>
 " Check Python files with flake8 and pylint.
-au FileType python let b:ale_linters = ['flake8', 'pylint']
+" au FileType python let b:ale_linters = ['flake8', 'pylint']
 " Fix Python files with autopep8 and yapf.
-au FileType python let b:ale_fixers = ['autopep8', 'yapf']
+" au FileType python let b:ale_fixers = ['autopep8', 'yapf']
 set expandtab
 " Disable warnings about trailing whitespace for Python files.
-au FileType python let b:ale_warn_about_trailing_whitespace = 0
+" au FileType python let b:ale_warn_about_trailing_whitespace = 0
 " Vertical diffs for git merge
 set diffopt+=vertical
-au FileType go let g:ale_linters = {
-	\ 'go': ['gopls'],
-	\}
+" au FileType go let g:ale_linters = {
+"	\ 'go': ['gopls'],
+"	\}
+" " At this point do slow actions
+let g:coc_disable_startup_warning = 1
+" profile pause
+" noautocmd qall!
