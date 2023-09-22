@@ -1,8 +1,5 @@
 " Fish doesn't play all that well with others
-" profile start profile.log
-" profile func *
-" profile file *
-" set shell=/bin/bash
+set shell=/bin/bash
 let mapleader = "\<Space>"
 if !empty($VIRTUAL_ENV)
     let g:python_host_prog = $VIRTUAL_ENV.'/bin/python'
@@ -11,11 +8,10 @@ if !empty($VIRTUAL_ENV)
     \'python' : [ $VIRTUAL_ENV.'/bin/pyls', ]
     \ }
 else
-    let g:python_host_prog = '/usr/bin/python2.7'
-    let g:python3_host_prog = '/usr/bin/python3'
+    let g:python_host_prog = '/usr/local/bin/python2.7'
+    let g:python3_host_prog = '/usr/local/bin/python3'
 endif
 
-let g:python3_host_prog = '/usr/local/bin/python3'
 
 " =============================================================================
 " # TESTING UTILS
@@ -37,14 +33,14 @@ autocmd FileType rust nmap <leader>tc :RunBg cargo test<CR>
 autocmd FileType rust nmap <leader>tC :RunBg cargo test -- --nocapture<CR>
 autocmd FileType rust nmap <leader>b :!cargo build<CR>
 autocmd FileType rust set ts=4 sw=4 et
-autocmd FileType rust let g:syntastic_rust_checkers = ['cargo']
-autocmd FileType rust let b:ale_linters = {'rust': ['rls','cargo','rustc']}
-autocmd FileType rust let g:ale_fixers = {'rust': ['rustfmt']}
-autocmd FileType rust let g:ale_completion_enabled = 1
+" autocmd FileType rust let g:syntastic_rust_checkers = ['cargo']
+" autocmd FileType rust let b:ale_linters = {'rust': ['rls','cargo','rustc']}
+" autocmd FileType rust let g:ale_fixers = {'rust': ['rustfmt']}
+" autocmd FileType rust let g:ale_completion_enabled = 1
 
 " Check Python files with flake8 and pylint.
-autocmd FileType python let b:ale_linters = ['pycodestyle']
-autocmd FileType python let b:ale_fixers = [ 'autopep8', 'yapf' ]
+" autocmd FileType python let b:ale_linters = ['pycodestyle']
+" autocmd FileType python let b:ale_fixers = [ 'autopep8', 'yapf' ]
 " =============================================================================
 " # RUN TESTS IN BACKGROUND
 " =============================================================================
@@ -137,7 +133,6 @@ Plug 'justinmk/vim-sneak'
 
 " GUI enhancements
 Plug 'itchyny/lightline.vim'
-"Plug 'w0rp/ale'
 Plug 'machakann/vim-highlightedyank'
 Plug 'andymass/vim-matchup'
 
@@ -148,22 +143,28 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'junegunn/fzf.vim'
 
 " Use release branch
-Plug 'neoclide/coc.nvim'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 " Syntactic language support
 Plug 'cespare/vim-toml'
 Plug 'stephpy/vim-yaml'
 Plug 'rust-lang/rust.vim'
-" Plug 'fatih/vim-go'
+Plug 'rhysd/vim-clang-format'
+"Plug 'fatih/vim-go'
 Plug 'dag/vim-fish'
 Plug 'godlygeek/tabular'
 Plug 'plasticboy/vim-markdown'
 Plug 'tikhomirov/vim-glsl'
 Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-abolish'
+
+Plug 'chrisbra/Colorizer'
+Plug 'folke/tokyonight.nvim'
+Plug 'github/copilot.vim'
+
 
 "Plug 'maximbaz/lightline-ale'
-Plug 'lepture/vim-jinja'
-Plug 'tpope/vim-abolish'
+"Plug 'lepture/vim-jinja'
 
 call plug#end()
 
@@ -173,9 +174,36 @@ if has('nvim')
     noremap <C-q> :confirm qall<CR>
 end
 
+" deal with colors
+
 if !has('gui_running')
   set t_Co=256
 endif
+if (match($TERM, "-256color") != -1) && (match($TERM, "screen-256color") == -1)
+  " screen does not (yet) support truecolor
+  set termguicolors
+endif
+set background=dark
+"let base16colorspace=256
+"let g:base16_shell_path="~/dev/others/base16/templates/shell/scripts/"
+
+lua << END
+require("tokyonight").setup({
+  style = "night",
+  transparent = true,
+})
+END
+
+colorscheme tokyonight-night
+syntax on
+" hi Normal ctermbg=NONE
+" Brighter comments
+"call Base16hi("Comment", g:base16_gui09, "", g:base16_cterm09, "", "", "")
+highlight rightMargin ctermbg=239
+if !&diff
+    2match rightMargin /.\%>80v/
+endif
+
 
 " Plugin settings
 let g:secure_modelines_allowed_items = [
@@ -191,16 +219,12 @@ let g:secure_modelines_allowed_items = [
                 \ "colorcolumn"
                 \ ]
 
-" Base16
-" let base16colorspace=256
-" let g:base16_shell_path="~/dev/others/base16/shell/scripts/"
-
 " Lightline
 let g:lightline = {
-	  \ 'colorscheme': 'PaperColor_dark',
+	  \ 'colorscheme': 'tokyonight',
       \ 'active': {
       \ 'left': [ [ 'mode', 'paste' ],
-      \           [ 'gitbranch', 'readonly', 'filename', 'modified' ] ],
+      \           [ 'cocstatus', 'gitbranch', 'readonly', 'filename', 'modified' ] ],
       \  'right': [ [ 'linter_checking', 'linter_errors', 'linter_warnings', 'linter_ok' ],
       \             ['teststatus'], ['lineinfo'],
       \             ['percent'], ['fileformat', 'fileencoding', 'filetype']
@@ -208,28 +232,24 @@ let g:lightline = {
       \ },
       \ 'component_function': {
       \   'filename': 'LightlineFilename',
+      \   'cocstatus': 'coc#status',
       \   'gitbranch': 'FugitiveStatusline',
       \   'teststatus': 'TestStatus',
       \ },
-\ }
+      \ }
 function! LightlineFilename()
   return expand('%:t') !=# '' ? @% : '[No Name]'
 endfunction
 
-"let g:lightline.component_expand = {
-"      \  'linter_checking': 'lightline#ale#checking',
-"      \  'linter_warnings': 'lightline#ale#warnings',
-"      \  'linter_errors': 'lightline#ale#errors',
-"      \  'linter_ok': 'lightline#ale#ok',
+" Use auocmd to force lightline update.
+autocmd User CocStatusChange,CocDiagnosticChange call lightline#update()
+
+"let g:lightline.component_type = {
+"      \     'linter_checking': 'left',
+"      \     'linter_warnings': 'warning',
+"      \     'linter_errors': 'error',
+"      \     'linter_ok': 'left',
 "      \ }
-
-let g:lightline.component_type = {
-      \     'linter_checking': 'left',
-      \     'linter_warnings': 'warning',
-      \     'linter_errors': 'error',
-      \     'linter_ok': 'left',
-      \ }
-
 
 " from http://sheerun.net/2014/03/21/how-to-boost-your-vim-productivity/
 if executable('ag')
@@ -243,66 +263,9 @@ endif
 " Javascript
 let javaScript_fold=0
 
-" Linter
-" let g:ale_sign_column_always = 1
-" only lint on save
-" let g:ale_lint_on_text_changed = 'never'
-" let g:ale_lint_on_save = 0
-" let g:ale_lint_on_enter = 0
-" let g:ale_rust_cargo_use_check = 1
-" let g:ale_rust_cargo_check_all_targets = 1
-" let g:ale_virtualtext_cursor = 0
-" language server protocol
-" work around the lack of a global language client settings file:
-" https://github.com/rust-lang/rls/issues/1324
-" https://github.com/autozimu/LanguageClient-neovim/issues/431
-" I primarily want that for the ability to set `build_on_save`,
-" which I in turn want because of
-" https://github.com/autozimu/LanguageClient-neovim/issues/603
-let g:LanguageClient_settingsPath = expand('~/.config/nvim/settings.json')
-autocmd FileType rust let g:LanguageClient_serverCommands = {
-    \ 'rust': ['env', 'CARGO_TARGET_DIR='.$HOME.'/cargo-target/rls', 'rls'],
-    \ }
-autocmd FileType go let g:LanguageClient_serverCommands = {
-    \ 'go': ['gopls']
-    \ }
-let g:LanguageClient_autoStart = 1
-nnoremap <silent> K :call LanguageClient_textDocument_hover()<CR>
-nnoremap <silent> gd :call LanguageClient_textDocument_definition()<CR>
-nnoremap <silent> <F2> :call LanguageClient_textDocument_rename()<CR>
-" don't make errors so painful to look at
-"let g:LanguageClient_diagnosticsDisplay = {
-"    \     1: {
-"    \         "name": "Error",
-"    \         "texthl": "ALEError",
-"    \         "signText": "✖",
-"    \         "signTexthl": "ErrorMsg",
-"    \         "virtualTexthl": "WarningMsg",
-"    \     },
-"    \     2: {
-"    \         "name": "Warning",
-"    \         "texthl": "ALEWarning",
-"    \         "signText": "⚠",
-"    \         "signTexthl": "ALEWarningSign",
-"    \         "virtualTexthl": "Todo",
-"    \     },
-"    \     3: {
-"    \         "name": "Information",
-"    \         "texthl": "ALEInfo",
-"    \         "signText": "ℹ",
-"    \         "signTexthl": "ALEInfoSign",
-"    \         "virtualTexthl": "Todo",
-"    \     },
-"    \     4: {
-"    \         "name": "Hint",
-"    \         "texthl": "ALEInfo",
-"    \         "signText": "➤",
-"    \         "signTexthl": "ALEInfoSign",
-"    \         "virtualTexthl": "Todo",
-"    \     },
-"    \ }
+" Java
+let java_ignore_javadoc=1
 
-let g:neomake_info_sign = {'text': '⚕', 'texthl': 'NeomakeInfoSign'}
 " Latex
 let g:latex_indent_enabled = 1
 let g:latex_fold_envs = 0
@@ -318,51 +281,23 @@ nmap <leader>w :w<CR>
 " Don't confirm .lvimrc
 let g:localvimrc_ask = 0
 
-" racer + rust
-" https://github.com/rust-lang/rust.vim/issues/192
-let g:rustfmt_command = "rustfmt +nightly"
+" rust
 let g:rustfmt_autosave = 1
 let g:rustfmt_emit_files = 1
 let g:rustfmt_fail_silently = 0
 let g:rust_clip_command = 'xclip -selection clipboard'
-"let g:racer_cmd = "/usr/bin/racer"
-"let g:racer_experimental_completer = 1
-" let $RUST_SRC_PATH = systemlist("rustc --print sysroot")[0] . "/lib/rustlib/src/rust/src"
 
-" tab to select
-" and don't hijack my enter key
-"inoremap <expr><Tab> (pumvisible()?(empty(v:completed_item)?"\<C-n>":"\<C-y>"):"\<Tab>")
-"inoremap <expr><CR> (pumvisible()?(empty(v:completed_item)?"\<CR>\<CR>":"\<C-y>"):"\<CR>")
 " Completion
 " Better display for messages
 set cmdheight=2
 " You will have bad experience for diagnostic messages when it's default 4000.
 set updatetime=300
-" Use tab for trigger completion with characters ahead and navigate.
-" Use command ':verbose imap <tab>' to make sure tab is not mapped by other plugin.
-inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
-      \ coc#refresh()
-inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
-function! s:check_back_space() abort
-  let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s'
-endfunction
-" Use <c-.> to trigger completion.
-inoremap <silent><expr> <c-.> coc#refresh()
-" Use <cr> to confirm completion, `<C-g>u` means break undo chain at current position.
-" Coc only does snippet and additional edit on confirm.
-" inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
-" Or use `complete_info` if your vim support it, like:
-" inoremap <expr> <cr> complete_info()["selected"] != "-1" ? "\<C-y>" : "\<C-g>u\<CR>"
-"
 
 " Golang
 let g:go_play_open_browser = 0
 let g:go_fmt_fail_silently = 1
 let g:go_fmt_command = "goimports"
-" let g:go_bin_path = expand("~/go/bin")
+let g:go_bin_path = expand("~/go/bin")
 
 " =============================================================================
 " # Editor settings
@@ -377,17 +312,13 @@ set noshowmode
 set hidden
 set nowrap
 set nojoinspaces
-if (match($TERM, "-256color") != -1) && (match($TERM, "screen-256color") == -1)
-  " screen does not (yet) support truecolor
-  set termguicolors
-endif
 let g:sneak#s_next = 1
 let g:vim_markdown_new_list_item_indent = 0
 let g:vim_markdown_auto_insert_bullets = 0
 let g:vim_markdown_frontmatter = 1
-set printfont=:h10
-set printencoding=utf-8
-set printoptions=paper:letter
+"set printfont=:h10
+"set printencoding=utf-8
+"set printoptions=paper:letter
 " Always draw sign column. Prevent buffer moving when adding/deleting sign.
 set signcolumn=yes
 
@@ -417,9 +348,6 @@ set noexpandtab
 " Use short tabs for yaml
 autocmd FileType yaml set shiftwidth=2 softtabstop=2 tabstop=2 expandtab nosmartindent noautoindent
 
-" Get syntax
-syntax on
-
 " Wrapping options
 set formatoptions=tc " wrap text and comments using textwidth
 set formatoptions+=r " continue comments when pressing ENTER in I mode
@@ -434,11 +362,11 @@ set smartcase
 " set gdefault
 
 " Search results centered please
-" nnoremap <silent> n nzz
-" nnoremap <silent> N Nzz
-" nnoremap <silent> * *zz
-" nnoremap <silent> # #zz
-" nnoremap <silent> g* g*zz
+nnoremap <silent> n nzz
+nnoremap <silent> N Nzz
+nnoremap <silent> * *zz
+nnoremap <silent> # #zz
+nnoremap <silent> g* g*zz
 
 " Very magic by default
 " nnoremap ? ?\v
@@ -468,18 +396,10 @@ set showcmd " Show (partial) command in status line.
 set mouse= " Enable mouse usage (all modes) in terminals
 set shortmess+=c " don't give |ins-completion-menu| messages.
 
-" Colors
-set background=dark
-colorscheme PaperColor
-"hi Normal ctermbg=NONE
-highlight rightMargin ctermbg=233
-2match rightMargin /.\%>80v/
-" set colorcolumn=80
-
 " =============================================================================
 " # HILIGHT CURRENT WORD
 " =============================================================================
-highlight currentWordHi term=bold ctermbg=236 guibg=green
+highlight currentWordHi ctermfg=Cyan guifg=none gui=bold guibg=#2a2a2a
 au CursorHold * exe 'match currentWordHi /\V\<'.substitute(escape(expand('<cword>'),'\'),"/","\\\\/","g").'\>/'
 au CursorHoldI * exe 'match currentWordHi /\V\<'.substitute(escape(expand('<cword>'),'\'),"/","\\\\/","g").'\>/'
 function! ResCur()
@@ -492,6 +412,7 @@ augroup resCur
  autocmd!
   autocmd BufWinEnter * call ResCur()
 augroup END
+" highlight Normal guibg=none
 
 " Show those damn hidden characters
 " Verbose: set listchars=nbsp:¬,eol:¶,extends:»,precedes:«,trail:•
@@ -520,8 +441,6 @@ map L $
 noremap <leader>p :read !xsel --clipboard --output<cr>
 noremap <leader>c :w !xsel -ib<cr><cr>
 
-" <leader>s for Rg search
-noremap <leader>s :Rg
 let g:fzf_layout = { 'down': '~20%' }
 command! -bang -nargs=* Rg
   \ call fzf#vim#grep(
@@ -532,7 +451,7 @@ command! -bang -nargs=* Rg
 
 function! s:list_cmd()
   let base = fnamemodify(expand('%'), ':h:.:S')
-  return base == '.' ? 'fd --type file --follow' : printf('fd --type file --follow | proximity-sort %s', expand('%'))
+  return base == '.' ? 'fd --type file --follow' : printf('fd --type file --follow | proximity-sort %s', shellescape(expand('%')))
 endfunction
 
 command! -bang -nargs=? -complete=dir Files
@@ -559,24 +478,45 @@ nnoremap <leader>e :e <C-R>=expand("%:p:h") . "/" <CR>
 nnoremap j gj
 nnoremap k gk
 
-" Jump to next/previous error
-nnoremap <C-j> :cnext<cr>
-nnoremap <C-k> :cprev<cr>
-"nmap <silent> L <Plug>(ale_lint)
-"nmap <silent> <C-k> <Plug>(ale_previous_wrap)
-"nmap <silent> <C-j> <Plug>(ale_next_wrap)
-nnoremap <C-l> :copen<cr>
-nnoremap <C-g> :cclose<cr>
-
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 'Smart' nevigation
-nmap <silent> E <Plug>(coc-diagnostic-prev)
-nmap <silent> W <Plug>(coc-diagnostic-next)
+" Use tab for trigger completion with characters ahead and navigate.
+" NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
+" other plugin before putting this into your config.
+inoremap <silent><expr> <TAB>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<TAB>" :
+      \ coc#refresh()
+
+" Make <CR> to accept selected completion item or notify coc.nvim to format
+" <C-g>u breaks current undo, please make your own choice.
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+
+function! s:check_back_space()
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+" Use <c-.> to trigger completion.
+inoremap <silent><expr> <c-.> coc#refresh()
+
+" Use `[g` and `]g` to navigate diagnostics
+nmap <silent> [g <Plug>(coc-diagnostic-prev)
+nmap <silent> ]g <Plug>(coc-diagnostic-next)
+
+" GoTo code navigation.
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
 nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
-" Use K to show documentation in preview window
+
+" Use K to show documentation in preview window.
 nnoremap <silent> K :call <SID>show_documentation()<CR>
+
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
     execute 'h '.expand('<cword>')
@@ -585,17 +525,39 @@ function! s:show_documentation()
   endif
 endfunction
 
+" Highlight the symbol and its references when holding the cursor.
+"autocmd CursorHold * silent call CocActionAsync('highlight')
+
+" Symbol renaming.
+nmap <leader>rn <Plug>(coc-rename)
+
+" Introduce function text object
+" NOTE: Requires 'textDocument.documentSymbol' support from the language server.
+xmap if <Plug>(coc-funcobj-i)
+xmap af <Plug>(coc-funcobj-a)
+omap if <Plug>(coc-funcobj-i)
+omap af <Plug>(coc-funcobj-a)
+
+" Use <TAB> for selections ranges.
+nmap <silent> <TAB> <Plug>(coc-range-select)
+xmap <silent> <TAB> <Plug>(coc-range-select)
+
+" Find symbol of current document.
+nnoremap <silent> <space>o  :<C-u>CocList outline<cr>
+
+" Search workspace symbols.
+nnoremap <silent> <space>s  :<C-u>CocList -I symbols<cr>
+
+" Implement methods for trait
+nnoremap <silent> <space>i  :call CocActionAsync('codeAction', '', 'Implement missing members')<cr>
+
+" Show actions available at this location
+nnoremap <silent> <space>a  <Plug>(coc-codeaction-selected)
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 " <leader><leader> toggles between buffers
 nnoremap <leader><leader> <c-^>
-
-" <leader>= reformats current tange
-au Filetype rust nnoremap <leader>- :'<,'>RustFmtRange<cr>
-au Filetype rust nnoremap <leader>= :RustFmt<cr>
-au Filetype go nnoremap <leader>= :GoFmt<cr>
-au Filetype go set noexpandtab
-au Filetype python nnoremap <leader>= :call CocAction('format')<cr>
-au Filetype javascript nnoremap <leader>= :call CocAction('format')<cr>
-" au Filetype python nnoremap <leader>= :ALEFix<cr>
 
 " <leader>, shows/hides hidden characters
 nnoremap <leader>, :set invlist<cr>
@@ -605,10 +567,6 @@ nnoremap <leader>q g<c-g>
 
 " Keymap for replacing up to next _ or -
 noremap <leader>m ct_
-noremap <leader>n ct-
-
-" M to make
-noremap M :!make -k -j4<cr>
 
 " I can type :help on my own, thanks.
 map <F1> <Esc>
@@ -632,9 +590,6 @@ if has("autocmd")
   au BufReadPost * if expand('%:p') !~# '\m/\.git/' && line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 endif
 
-" Auto-make less files on save
-autocmd BufWritePost *.less if filereadable("Makefile") | make | endif
-
 " Follow Rust code style rules
 au Filetype rust set shiftwidth=4 softtabstop=4 tabstop=4 expandtab
 " au Filetype rust set colorcolumn=100
@@ -645,7 +600,6 @@ autocmd BufRead *.md set filetype=markdown
 autocmd BufRead *.lds set filetype=ld
 autocmd BufRead *.tex set filetype=tex
 autocmd BufRead *.trm set filetype=c
-autocmd BufRead *.hcl set filetype=tf
 autocmd BufRead *.xlsx.axlsx set filetype=ruby
 
 " Script plugins
@@ -660,7 +614,8 @@ if has('nvim')
 	runtime! plugin/python_setup.vim
 endif
 let g:TestStatus=-1
-let g:rooter_patterns = ['.git', '.git/', '_darcs/', '.hg/', '.bzr/', '.svn/', 'Cargo.toml']
+let g:rooter_patterns = ['.git', '.git/', '_darcs/', '.hg/', '.bzr/', '.svn/']
+"let g:rooter_patterns = ['.git', '.git/', '_darcs/', '.hg/', '.bzr/', '.svn/', 'Cargo.toml']
 
 highlight clear SignColumn
 highlight GitGutterAdd ctermfg=green
@@ -681,7 +636,36 @@ set diffopt+=vertical
 " au FileType go let g:ale_linters = {
 "	\ 'go': ['gopls'],
 "	\}
-" " At this point do slow actions
-let g:coc_disable_startup_warning = 1
-" profile pause
-" noautocmd qall!
+set cmdheight=1
+nnoremap <leader>C :!cargo clippy
+
+
+function! Snakecase(word)
+  let word = substitute(a:word,'::','/','g')
+  let word = substitute(word,'\(\u\+\)\(\u\l\)','\1_\2','g')
+  let word = substitute(word,'\(\l\|\d\)\(\u\)','\1_\2','g')
+  let word = substitute(word,'[.-]','_','g')
+  let word = tolower(word)
+  return word
+endfunction
+
+function! Uppercase(word)
+  return toupper(Snakecase(a:word))
+endfunction
+
+function! Mixedcase(word)
+  return substitute(Camelcase(a:word),'^.','\u&','')
+endfunction
+
+function! Camelcase(word)
+  let word = substitute(a:word, '-', '_', 'g')
+  if word !~# '_' && word =~# '\l'
+    return substitute(word,'^.','\l&','')
+  else
+    return substitute(word,'\C\(_\)\=\(.\)','\=submatch(1)==""?tolower(submatch(2)) : toupper(submatch(2))','g')
+  endif
+endfunction
+
+" <leader>s for Rg search
+noremap <leader>s :Rg<cr>
+hi CocInlayHint guibg=#222222 guifg=#d5a341 gui=italic
